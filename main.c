@@ -4,10 +4,12 @@
 #define DEFUALT_ITER 200
 #define INVALID_CLUSTER_MSG "Invalid number of clusters! \n"
 #define INVALID_ITER_MSG "Invalid maximum iteration! \n"
-#define GENERAL_ERROR "An Error Has Occurred"
-#define INVALID_CLUSTER_ERROR()  \
-	printf(INVALID_CLUSTER_MSG); \
+#define GENERAL_ERROR_MSG "An Error Has Occurred"
+#define ERROR_CLEANUP_AND_EXIT(ERR_MSG)  \
+	printf(ERR_MSG); \
+	cleanup(); \ 
 	exit(1);
+
 typedef struct point
 {
 	double *coords;
@@ -65,23 +67,20 @@ int main(int argc, char **argv)
 
 	if (!listInit(dataPointsInput))
 	{
-		printf(GENERAL_ERROR);
-		exit(1);
+		ERROR_CLEANUP_AND_EXIT(GENERAL_ERROR);
 	}
 	/*
 		Get all datapoints in string form
 	*/
 	if (!recieveFileLinkedList(dataPointsInput, stdin))
 	{
-		printf(GENERAL_ERROR);
-		exit(1);
+		ERROR_CLEANUP_AND_EXIT(GENERAL_ERROR);
 	}
 	n = dataPointsInput->size;
 
 	if (argc < 1)
 	{
-		printf(INVALID_CLUSTER_MSG);
-		exit(1);
+		ERROR_CLEANUP_AND_EXIT(INVALID_CLUSTER_MSG);
 	}
 	else
 	{
@@ -89,8 +88,7 @@ int main(int argc, char **argv)
 		k = atoi(argv[0]);
 		if (!(k > 1 && k < n))
 		{
-			printf(INVALID_CLUSTER_MSG);
-			exit(1);
+			ERROR_CLEANUP_AND_EXIT(INVALID_CLUSTER_MSG);
 		}
 		if (k == 0)
 			iter = DEFUALT_ITER;

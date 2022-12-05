@@ -5,6 +5,11 @@
 			"label": "compile C",
 			"command": "/usr/bin/gcc",
 			"args": [
+				"-ansi",
+                "-Wall",
+                "-Wextra",
+                "-Werror",
+                "-pedantic-errors",
 				"-g",
 				"${file}",
 				"-o",

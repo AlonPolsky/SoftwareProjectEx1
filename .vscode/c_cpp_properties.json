@@ -3,9 +3,7 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/**",
-                "/a/home/cc/students/cs/arelsharon/SoftwareProjectEx1/**"
-
+                "${workspaceFolder}/**"
             ],
             "defines": [],
             "cStandard": "c89",
@@ -16,7 +14,12 @@
                 "-Wall",
                 "-Wextra",
                 "-Werror",
-                "-pedantic-errors"
+                "-pedantic-errors",
+				"-g",
+				"${file}",
+				"-o",
+				"${fileDirname}/bin/${fileBasenameNoExtension}",
+				"-lm"
             ]
         }
     ],

@@ -4,10 +4,14 @@
 #define DEFUALT_ITER 200
 #define INVALID_CLUSTER_MSG "Invalid number of clusters! \n"
 #define INVALID_ITER_MSG "Invalid maximum iteration! \n"
+#define GENERAL_ERROR "An Error Has Occurred"
 
-typedef struct
+/*
+	Linked List
+*/
+typedef struct listNode
 {
-	double key;
+	char *key;
 	struct listNode *prev;
 	struct listNode *next;
 } ListNode;
@@ -17,19 +21,72 @@ typedef struct
 	ListNode *head;
 } LinkedList;
 
-void listInit(LinkedList *l);
-ListNode *listInsert(LinkedList *, ListNode *);
-ListNode *listInsertKey(LinkedList *, double);
-ListNode *listSearch(LinkedList *, double);
+int listInit(LinkedList *l);
+ListNode *listInsert(LinkedList *l, ListNode *);
+ListNode *listInsertKey(LinkedList *, char *);
 void listDelete(LinkedList *, ListNode *);
 void listDestroy(LinkedList *);
+
 /*
- * Assume allocated
- */
-void init(LinkedList *l)
+	String Actions
+	Assumes strings of the same length
+*/
+void stringCpy(char *copyInto, char *copyFrom);
+
+/*
+	User input
+*/
+LinkedList *dataPoints;
+unsigned int n;
+unsigned int k;
+unsigned int iter;
+
+/*
+	File Read Help
+*/
+char *datapointLine;
+unsigned int length;
+size_t nread;
+
+int main(int argc, char **argv)
 {
-	l->compare = compare;
+
+	if (!listInit(dataPoints))
+	{
+		printf(GENERAL_ERROR);
+	}
+	n = 0;
+	while ((nread = getline(&datapointLine, &length, stdin)) != EOF)
+	{
+		char *temp = (char *)malloc(sizeof(char) * nread);
+		stringCpy(temp, datapointLine);
+		listInsertKey(dataPoints, temp);
+		n++;
+	}
+
+	if (argc < 1)
+	{
+		printf(INVALID_CLUSTER_MSG);
+	}
+	else
+	{
+		// ADD ERROR HANDELING
+		k = atoi(argv[0]);
+		if (k == 0)
+			iter = DEFUALT_ITER;
+		if (argc == 2)
+		{
+			iter = atoi(argv[1]);
+		}
+	}
+}
+int listInit(LinkedList *l)
+{
+	l = (LinkedList *)malloc(sizeof(LinkedList));
+	if (!l)
+		return 1;
 	l->head = NULL;
+	return 0;
 }
 ListNode *listInsert(LinkedList *l, ListNode *node)
 {
@@ -42,7 +99,7 @@ ListNode *listInsert(LinkedList *l, ListNode *node)
 	node->prev = NULL;
 	return node;
 }
-ListNode *listInsertKey(LinkedList *l, void *key)
+ListNode *listInsertKey(LinkedList *l, char *key)
 {
 	ListNode *node = (ListNode *)malloc(sizeof(ListNode));
 	if (!node)
@@ -52,15 +109,6 @@ ListNode *listInsertKey(LinkedList *l, void *key)
 	node->key = key;
 
 	return listInsert(l, node);
-}
-ListNode *listSearch(LinkedList *l, void *p)
-{
-	ListNode *iter = l->head;
-	while (iter != NULL && (l->compare(iter->key, p) != 0))
-	{
-		iter = iter->next;
-	}
-	return iter;
 }
 void listDelete(LinkedList *l, ListNode *p)
 {
@@ -83,36 +131,19 @@ void listDestroy(LinkedList *l)
 	{
 		temp = l->head;
 		l->head = l->head->next;
+		free(temp->key);
 		free(temp);
 	}
 	free(iter);
 	free(l);
 	l = NULL;
 }
-
-unsigned int k;
-unsigned int iter;
-
-int main(int argc, char **argv)
+void stringCpy(char *copyInto, char *copyFrom)
 {
-
-	/*
-		READ FILE
-	*/
-
-	if (argc < 1)
+	while (*copyFrom != '\0')
 	{
-		printf(INVALID_CLUSTER_MSG);
-	}
-	else
-	{
-		// ADD ERROR HANDELING
-		k = atoi(argv[0]);
-		if (k == 0)
-			iter = DEFUALT_ITER;
-		if (argc == 2)
-		{
-			iter = atoi(argv[1]);
-		}
+		*copyInto = *copyFrom;
+		copyInto++;
+		copyFrom++;
 	}
 }

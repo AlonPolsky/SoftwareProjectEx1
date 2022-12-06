@@ -51,7 +51,7 @@ void listInit(LinkedList *);
 ListNode *listInsert(LinkedList *, ListNode *);
 ListNode *listInsertKey(LinkedList *, char *);
 void listDelete(LinkedList *, ListNode *);
-
+void listReverse(LinkedList*);
 /*
 	String Actions
 	Assumes strings of the same length
@@ -143,6 +143,7 @@ int main(int argc, char **argv)
 	if(dataPoints == NULL || centroids == NULL){
 		ERROR_CLEANUP_AND_EXIT(GENERAL_ERROR_MSG);
 	}
+	listReverse(&dataPointsInput);//Remove
 	parseDataPoints(&dataPointsInput,dataPoints);
 
 	/*
@@ -253,6 +254,20 @@ void listDestroy(LinkedList *l)
 		free(temp->key);
 		free(temp);
 	}
+}
+void listReverse(LinkedList*l)
+{
+	ListNode* prev = NULL;
+	ListNode* curr = l->head;
+	ListNode* next;
+	while(curr != NULL)
+	{
+		next = curr->next;
+		curr->next = prev;
+		prev = curr;
+		curr = next; 
+	}
+	l->head = prev;
 }
 void stringCpy(char *copyInto, char *copyFrom)
 {

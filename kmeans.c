@@ -70,6 +70,7 @@ void printResults(const Centroid* finalCentroids,const unsigned int k);
 	Actual logic
 */
 void initDataPointsWithStartingCluster(ClusterPoint*,Centroid*,unsigned int);
+int initPointArr(Point*,unsigned int,unsigned int);
 void updateDataPointCluster(ClusterPoint* data,const unsigned int dataSize,Centroid* centeroids,const unsigned int centeroidsSize);
 int mmDistanceIndex(const Point* point,const Point* otherPoints,const unsigned int otherPointsSize,const int operator);
 int minDistanceIndex(const Point* point,const Point* otherPoints,const unsigned int otherPointsSize);
@@ -77,7 +78,7 @@ int maxDistanceIndex(const Point* point,const Point* otherPoints,const unsigned 
 double euclideanDistance (const Point* a, const Point* b);
 void sumIntoPoint(Point* a, const Point* b);
 void multipyPointByScalar(const Point* p,double scalar);
-Centroid* getUpdatedCentroids(const ClusterPoint* clusterPoints,const unsigned int n ,const unsigned int k);
+int getUpdatedCentroids(const ClusterPoint* clusterPoints,const unsigned int n ,const unsigned int k,Centroid* updatedCentroids);
 /*
 	Error handeling and cleanup
 */
@@ -102,6 +103,7 @@ int main(int argc, char **argv)
 	unsigned int itersCompleted = 0;
 	size_t i = 0;
 	unsigned int converged = 0;
+	unsigned int status;
 	double maxDelta;
 	double tempDelta;
 	Centroid* updatedCentroids = NULL;
@@ -140,7 +142,8 @@ int main(int argc, char **argv)
 
 	dataPoints = (ClusterPoint*)malloc(sizeof(ClusterPoint) * n);
 	centroids  = (Centroid*)	malloc(sizeof(Centroid) * k);
-	if(dataPoints == NULL || centroids == NULL){
+	updatedCentroids  = (Centroid*)	malloc(sizeof(Centroid) * k);
+	if(dataPoints == NULL || centroids == NULL|| updatedCentroids == NULL){
 		ERROR_CLEANUP_AND_EXIT(GENERAL_ERROR_MSG);
 	}
 	listReverse(&dataPointsInput);
@@ -151,7 +154,11 @@ int main(int argc, char **argv)
 		init It according to step 1 in the algorithm
 	*/
 	initDataPointsWithStartingCluster(dataPoints,centroids,k);
-	
+	status = initPointArr(updatedCentroids,dataPoints->point.dimention,k);
+	if(status == 1)
+	{
+		return 1;
+	}
 	while( !converged  &&  itersCompleted < iter)
 	{
 		for (i = 0; i < n; i++)
@@ -164,17 +171,13 @@ int main(int argc, char **argv)
 
 		}
 
-
-		
-		updatedCentroids = getUpdatedCentroids(dataPoints,n,k);
-		if(updatedCentroids == NULL)
+		/*
+			updatedCentroids are updated here
+		*/
+		if(getUpdatedCentroids(dataPoints,n,k,updatedCentroids) == 1)
 		{
 			ERROR_CLEANUP_AND_EXIT(GENERAL_ERROR_MSG);
 		}
-
-
-
-
 		maxDelta = 0;
 		for (i = 0; i < k; i++)
 		{
@@ -194,8 +197,6 @@ int main(int argc, char **argv)
 	}
 	
 	printResults(centroids,k);
-	
-	
 	/*
 		Finished, Cleanup 
 	*/
@@ -409,29 +410,22 @@ double euclideanDistance (const Point* a, const Point* b)
 	}
 	return sqrt(sum);
 }
-Centroid* getUpdatedCentroids(const ClusterPoint* clusterPoints,const unsigned int n ,const unsigned int k){
+int getUpdatedCentroids(const ClusterPoint* clusterPoints,const unsigned int n ,const unsigned int k,Centroid* updatedCentroids){
 	
 	size_t i;
-	Centroid* updatedCentroids = (Centroid*) malloc(sizeof(Centroid) * k);
+	size_t j;
+	int initPointStatus;
 	int* clusterSizeArr = (int*) calloc(k,sizeof(int));
 	Point* clusterSumArr  =  (Point*) calloc(k,sizeof(Point));
 	
-	for (i = 0; i < k; i++)
-	{
-		clusterSumArr[i].coords = (double*)calloc(clusterPoints[i].point.dimention,sizeof(double));
-		clusterSumArr[i].dimention = clusterPoints->point.dimention;
-		if(clusterSumArr[i].coords == NULL)
-		{
-			return NULL;
-		}
-	}
+	initPointStatus = initPointArr(clusterSumArr,clusterPoints->point.dimention,k);
 	
-	if(updatedCentroids == NULL || clusterSizeArr == NULL || clusterSumArr == NULL)
+	if(updatedCentroids == NULL || clusterSizeArr == NULL || clusterSumArr == NULL || initPointStatus==1)
 	{
 		free(updatedCentroids);
 		free(clusterSizeArr);
 		free(clusterSumArr);
-		return NULL;
+		return 1;
 	}
 
 
@@ -444,14 +438,18 @@ Centroid* getUpdatedCentroids(const ClusterPoint* clusterPoints,const unsigned i
 	for (i = 0; i < k; i++)
 	{
 		if(clusterSizeArr[i] == 0){
-			return NULL;
+			return 1;
 		}
 		multipyPointByScalar(&clusterSumArr[i],1/((double)clusterSizeArr[i]));
-		updatedCentroids[i] = clusterSumArr[i];
+		for ( j= 0; j < clusterPoints[0].point.dimention; j++)
+		{
+			updatedCentroids[i].coords[j] = clusterSumArr[i].coords[j];
+		}
+		
 	}
-	
+	pointDestroy(clusterSumArr,k);
 	free(clusterSizeArr);
-	return updatedCentroids;
+	return 0;
 }
 void sumIntoPoint(Point* sumInto, const Point* sumFrom){
 	size_t i;
@@ -483,6 +481,19 @@ void printResults(const Centroid* finalCentroids,const unsigned int k)
 		printf("\n");
 	}
 }
+int initPointArr(Point* arr,unsigned int dim ,unsigned int k){
+	size_t i;
+	for (i = 0; i < k; i++)
+	{
+		arr[i].coords = (double*)calloc(dim,sizeof(double));
+		arr[i].dimention = dim;
+		if(arr[i].coords == NULL)
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
 void centroidsDestroy(Centroid * c,unsigned int k)
 {
 	pointDestroy(c,k);
@@ -495,17 +506,10 @@ void pointDestroy(Point * pArr,unsigned int k)
 }
 void coordsDestroy(Point * pArr,unsigned int k)
 {
-	size_t i = 0;
 	size_t j = 0;
-	Point* temp;
 	for (; j < k; j++)
 	{
-		temp = pArr;
-		for (; i < pArr[0].dimention; i++)
-		{
-			free(pArr[i].coords);
-		}
-		pArr = temp+1;
+		free(pArr[j].coords);
 	}
 	
 }

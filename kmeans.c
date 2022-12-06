@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#define EPSILON 0.001f
+#define EPSILON 0.001
 #define DEFUALT_ITER 200
 #define MAX_ITER 1000
 #define MIN_ITER 1
@@ -13,7 +13,7 @@
 #define ERROR_CLEANUP_AND_EXIT(ERR_MSG)  \
 	printf(ERR_MSG); \
 	cleanup(); \
-	exit(1)
+	return 1
 
 typedef struct point
 {
@@ -59,13 +59,13 @@ void listReverse(LinkedList*);
 void stringCpy(char *copyInto, char *copyFrom);
 
 /*
-	Input handeling
+	IO handeling
 */
 int recieveFileLinkedList(LinkedList *, FILE *stream);
 int parseDataPoints(LinkedList *,ClusterPoint*);
 void parseDataPoint(char*,double* outData);
 int extractD(char*);
-
+void printResults(const Centroid* finalCentroids,const unsigned int k);
 /*
 	Actual logic
 */
@@ -79,7 +79,7 @@ void sumIntoPoint(Point* a, const Point* b);
 void multipyPointByScalar(const Point* p,double scalar);
 Centroid* getUpdatedCentroids(const ClusterPoint* clusterPoints,const unsigned int n ,const unsigned int k);
 /*
-	Error handeling
+	Error handeling and cleanup
 */
 void cleanup();
 void centroidsDestroy(Centroid *,unsigned int k);
@@ -193,7 +193,7 @@ int main(int argc, char **argv)
 		itersCompleted++;
 	}
 	
-	
+	printResults(centroids,k);
 	
 	
 	/*
@@ -399,7 +399,6 @@ int mmDistanceIndex(const Point* point,const Point* otherPoints,const unsigned i
 	}
 	return minIndex;
 }
-
 double euclideanDistance (const Point* a, const Point* b)
 {
 	double sum = 0;
@@ -468,7 +467,22 @@ void multipyPointByScalar(const Point* p,double scalar){
 		p->coords[i] *= scalar;
 	}
 }
-
+void printResults(const Centroid* finalCentroids,const unsigned int k)
+{
+	size_t i,j;
+	for (i = 0; i < k; i++)
+	{
+		for (j= 0; j < finalCentroids->dimention; j++)
+		{
+			printf("%.4f",finalCentroids[i].coords[j]);
+			if(j!=finalCentroids->dimention - 1)
+			{
+				printf(",");
+			}
+		}
+		printf("\n");
+	}
+}
 void centroidsDestroy(Centroid * c,unsigned int k)
 {
 	pointDestroy(c,k);

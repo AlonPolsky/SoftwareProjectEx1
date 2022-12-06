@@ -143,7 +143,7 @@ int main(int argc, char **argv)
 	if(dataPoints == NULL || centroids == NULL){
 		ERROR_CLEANUP_AND_EXIT(GENERAL_ERROR_MSG);
 	}
-	listReverse(&dataPointsInput);//Remove
+	listReverse(&dataPointsInput);
 	parseDataPoints(&dataPointsInput,dataPoints);
 
 	/*
@@ -188,7 +188,7 @@ int main(int argc, char **argv)
 		{
 			converged = 1;
 		}
-		centroidsDestroy(centroids,k);
+
 		centroids = updatedCentroids;
 		itersCompleted++;
 	}
@@ -280,8 +280,8 @@ void stringCpy(char *copyInto, char *copyFrom)
 }
 int recieveFileLinkedList(LinkedList *l, FILE *stream)
 {
-	char *datapointLine;
-	size_t length;
+	char *datapointLine =NULL;
+	size_t length =0;
 	ssize_t nread;
 	while ((nread = getline(&datapointLine, &length, stream)) != EOF)
 	{

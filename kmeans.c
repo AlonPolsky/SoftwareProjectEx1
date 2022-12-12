@@ -78,6 +78,7 @@ int maxDistanceIndex(const Point* point,const Point* otherPoints,const unsigned 
 double euclideanDistance (const Point* a, const Point* b);
 void sumIntoPoint(Point* a, const Point* b);
 void multipyPointByScalar(const Point* p,double scalar);
+void copyIntoPoint(Point* copyInto, const Point* copyFrom);
 int getUpdatedCentroids(const ClusterPoint* clusterPoints,const unsigned int n ,const unsigned int k,Centroid* updatedCentroids);
 /*
 	Error handeling and cleanup
@@ -91,8 +92,10 @@ void coordsDestroy(Point * pArr,unsigned int k);
 /*
 	User input
 */
-ClusterPoint* dataPoints;
-Centroid* centroids;
+ClusterPoint* dataPoints = NULL;
+Centroid* centroids = NULL;
+Centroid* updatedCentroids = NULL;
+
 LinkedList dataPointsInput;
 unsigned int n;
 unsigned int k;
@@ -106,7 +109,6 @@ int main(int argc, char **argv)
 	unsigned int status;
 	double maxDelta;
 	double tempDelta;
-	Centroid* updatedCentroids = NULL;
 
 
 
@@ -191,8 +193,12 @@ int main(int argc, char **argv)
 		{
 			converged = 1;
 		}
-
-		centroids = updatedCentroids;
+		for ( i = 0; i < k; i++)
+		{
+			copyIntoPoint( &centroids[i], &updatedCentroids[i]);
+		}
+		
+		
 		itersCompleted++;
 	}
 	
@@ -299,6 +305,7 @@ int recieveFileLinkedList(LinkedList *l, FILE *stream)
 		}
 		n++;
 	}
+	free(datapointLine);
 	return 0;
 }
 int parseDataPoints(LinkedList *l,ClusterPoint*data)
@@ -346,9 +353,11 @@ int extractD(char* line)
 }
 void initDataPointsWithStartingCluster(ClusterPoint* clusterPoints,Centroid* clusterCentroids,unsigned int clusterCount ){
 	size_t i;
+	initPointArr(clusterCentroids,clusterPoints[0].point.dimention,clusterCount);
 	for (i = 0; i < clusterCount; i++)
 	{
-		clusterCentroids[i] = clusterPoints[i].point;
+		
+		copyIntoPoint(&clusterCentroids[i], &clusterPoints[i].point);
 		clusterPoints[i].belong = i + 1;
 	}
 	
@@ -413,16 +422,13 @@ double euclideanDistance (const Point* a, const Point* b)
 int getUpdatedCentroids(const ClusterPoint* clusterPoints,const unsigned int n ,const unsigned int k,Centroid* updatedCentroids){
 	
 	size_t i;
-	size_t j;
-	int initPointStatus;
+	unsigned int dim = clusterPoints[0].point.dimention;
 	int* clusterSizeArr = (int*) calloc(k,sizeof(int));
 	Point* clusterSumArr  =  (Point*) calloc(k,sizeof(Point));
-	
-	initPointStatus = initPointArr(clusterSumArr,clusterPoints->point.dimention,k);
-	
-	if(updatedCentroids == NULL || clusterSizeArr == NULL || clusterSumArr == NULL || initPointStatus==1)
+	initPointArr(clusterSumArr,dim,k);
+
+	if(updatedCentroids == NULL || clusterSizeArr == NULL || clusterSumArr == NULL)
 	{
-		free(updatedCentroids);
 		free(clusterSizeArr);
 		free(clusterSumArr);
 		return 1;
@@ -438,14 +444,13 @@ int getUpdatedCentroids(const ClusterPoint* clusterPoints,const unsigned int n ,
 	for (i = 0; i < k; i++)
 	{
 		if(clusterSizeArr[i] == 0){
+			free(clusterSizeArr);
+			free(clusterSumArr);
 			return 1;
 		}
 		multipyPointByScalar(&clusterSumArr[i],1/((double)clusterSizeArr[i]));
-		for ( j= 0; j < clusterPoints[0].point.dimention; j++)
-		{
-			updatedCentroids[i].coords[j] = clusterSumArr[i].coords[j];
-		}
-		
+		copyIntoPoint( &updatedCentroids[i], &clusterSumArr[i]);
+
 	}
 	pointDestroy(clusterSumArr,k);
 	free(clusterSizeArr);
@@ -465,6 +470,15 @@ void multipyPointByScalar(const Point* p,double scalar){
 		p->coords[i] *= scalar;
 	}
 }
+void copyIntoPoint(Point* copyInto, const Point* copyFrom)
+{
+	size_t i;
+	for ( i= 0; i < copyInto->dimention; i++)
+	{
+		copyInto->coords[i] = copyFrom->coords[i];
+	}
+}
+
 void printResults(const Centroid* finalCentroids,const unsigned int k)
 {
 	size_t i,j;
@@ -525,5 +539,7 @@ void clusterPointDestroy(ClusterPoint *c,unsigned int n)
 void cleanup()
 {
 	listDestroy(&dataPointsInput);
-	clusterPointDestroy(dataPoints,n);	
+	clusterPointDestroy(dataPoints,n);
+	centroidsDestroy(centroids,k);
+	centroidsDestroy(updatedCentroids,k);
 }

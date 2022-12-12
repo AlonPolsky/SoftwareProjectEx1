@@ -1,0 +1,16 @@
+[
+    { 
+        "directory": "${workspaceFolder}",
+        "arguments": ["/usr/bin/clang++", "-ansi",
+                            "-Wall",
+                            "-Wextra",
+                            "-Werror",
+                            "-pedantic-errors",
+                            "-g",
+                            "${file}",
+                            "-o",
+                            "${fileDirname}/bin/${fileBasenameNoExtension}",
+                            "-lm"],
+        "file": "kmeans.cc"
+     }
+]

@@ -165,14 +165,11 @@ int main(int argc, char **argv)
 	}
 	while (!converged && itersCompleted < iter)
 	{
-		for (i = 0; i < n; i++)
-		{
 
-			/*
-				Assign every xi to the closest cluster
-			*/
-			updateDataPointCluster(dataPoints, n, centroids, k);
-		}
+		/*
+			Assign every xi to the closest cluster
+		*/
+		updateDataPointCluster(dataPoints, n, centroids, k);
 
 		/*
 			updatedCentroids are updated here

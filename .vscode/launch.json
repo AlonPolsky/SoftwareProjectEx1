@@ -10,10 +10,10 @@
 			"request": "launch",
 			"program": "${workspaceFolder}/bin/${fileBasenameNoExtension}",
 			"args": [
-				"15",
-				"300",
+				"7",
+				"2",
 				"<",
-				"${workspaceFolder}/input/input_3.txt"
+				"${workspaceFolder}/input/input_2.txt"
 			],
 			"stopAtEntry": false,
 			"cwd": "${fileDirname}",

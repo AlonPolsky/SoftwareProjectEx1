@@ -3,3 +3,4 @@ bin/*
 *.txt
 core
 2
+./kmeans

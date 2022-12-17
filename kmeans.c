@@ -151,8 +151,11 @@ int main(int argc, char **argv)
 		ERROR_CLEANUP_AND_EXIT(GENERAL_ERROR_MSG);
 	}
 	listReverse(&dataPointsInput);
-	parseDataPoints(&dataPointsInput, dataPoints);
-
+	status = parseDataPoints(&dataPointsInput, dataPoints);
+	if(status == 1)
+	{
+		ERROR_CLEANUP_AND_EXIT(GENERAL_ERROR_MSG);
+	}
 	/*
 		We finally have useable input, usable datapoint cluster array.
 		init It according to step 1 in the algorithm
@@ -161,7 +164,7 @@ int main(int argc, char **argv)
 	status = initPointArr(updatedCentroids, dataPoints->point.dimention, k);
 	if (status == 1)
 	{
-		return 1;
+		ERROR_CLEANUP_AND_EXIT(GENERAL_ERROR_MSG);
 	}
 	while (!converged && itersCompleted < iter)
 	{
@@ -251,6 +254,10 @@ void listDelete(LinkedList *l, ListNode *p)
 void listDestroy(LinkedList *l)
 {
 	ListNode *temp;
+	if(l==NULL)
+	{
+		return;
+	}
 	while (l->head != NULL)
 	{
 		temp = l->head;
